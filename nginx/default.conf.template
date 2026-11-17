@@ -19,7 +19,9 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://backend;
+        proxy_pass ${BACKEND_SCHEME}://backend;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${BACKEND_HOST};
         proxy_http_version 1.1;
         proxy_set_header Host ${BACKEND_HOST};
         proxy_set_header X-Real-IP $remote_addr;
@@ -31,7 +33,9 @@ server {
     }
 
     location /health {
-        proxy_pass http://backend;
+        proxy_pass ${BACKEND_SCHEME}://backend;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${BACKEND_HOST};
         proxy_http_version 1.1;
         proxy_set_header Host ${BACKEND_HOST};
     }
