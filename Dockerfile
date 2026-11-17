@@ -5,7 +5,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:stable-alpine
+FROM nginx:1.20-alpine
 RUN apk upgrade --no-cache
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 ENV BACKEND_ADDR=backend:3007 BACKEND_HOST=backend BACKEND_SCHEME=http
