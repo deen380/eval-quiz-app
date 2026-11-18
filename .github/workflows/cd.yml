@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SERVER: ${{ secrets.ACR_NAME }}.azurecr.io
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connexion Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Connexion ACR
+        run: az acr login -n ${{ secrets.ACR_NAME }}
+
+      - name: Build et push des images
+        run: |
+          docker build -t $SERVER/quiz-frontend:$TAG .
+          docker build -t $SERVER/quiz-backend:$TAG ./backend
+          docker push $SERVER/quiz-frontend:$TAG
+          docker push $SERVER/quiz-backend:$TAG
+
+      - name: Mise à jour des Container Apps
+        run: |
+          az extension add --name containerapp --upgrade -y
+          az containerapp update -n quiz-backend -g ${{ secrets.RG_NAME }} --image $SERVER/quiz-backend:$TAG
+          az containerapp update -n quiz-frontend -g ${{ secrets.RG_NAME }} --image $SERVER/quiz-frontend:$TAG
+
+      - name: Révisions actives
+        run: |
+          az containerapp revision list -n quiz-backend -g ${{ secrets.RG_NAME }} -o table
+          az containerapp revision list -n quiz-frontend -g ${{ secrets.RG_NAME }} -o table
