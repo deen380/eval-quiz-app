@@ -15,7 +15,7 @@ export const Questions = [
     correct: "Partager des données entre le conteneur et l'hôte",
   },
   {
-    question: "Quel est le rôle du Dockerfile ?",
+    question: "Quel est le rôle principal du Dockerfile ?",
     answers: [
       "Il décrit comment construire un conteneur",
       "Il exécute directement un conteneur",
